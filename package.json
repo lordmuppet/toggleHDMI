@@ -1,0 +1,23 @@
+{
+  "name": "togglehdmi",
+  "version": "1.0.0",
+  "description": "Turn off and on HDMI on Raspberry PI via REST API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lordmuppet/toggleHDMI.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lordmuppet/toggleHDMI/issues"
+  },
+  "homepage": "https://github.com/lordmuppet/toggleHDMI#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4"
+  }
+}
