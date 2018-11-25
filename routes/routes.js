@@ -2,7 +2,7 @@ var appRouter = function (app) {
     app.get("/rpihdmi/off", function (req, res) {
 
         const exec = require('child_process').exec;
-        var turnoff = exec('sh ~/rpi-hdmi.sh off',
+        var turnoff = exec('sh rpi-hdmi.sh off',
             (error, stdout, stderr) => {
                 console.log(`${stdout}`);
                 console.log(`${stderr}`);
@@ -17,7 +17,7 @@ var appRouter = function (app) {
     app.get("/rpihdmi/on", function (req, res) {
 
         const exec = require('child_process').exec;
-        var turnoff = exec('sh ~/rpi-hdmi.sh on',
+        var turnoff = exec('sh rpi-hdmi.sh on',
             (error, stdout, stderr) => {
                 console.log(`${stdout}`);
                 console.log(`${stderr}`);
