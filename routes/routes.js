@@ -1,3 +1,5 @@
+var path    = require("path");
+
 var appRouter = function (app) {
     app.get("/rpihdmi/off", function (req, res) {
 
@@ -26,6 +28,10 @@ var appRouter = function (app) {
                 }
             });
         res.status(200).send("Display turned on!");
+    });
+
+    app.get("/map", function(req, res) {
+        res.sendFile(path.join(__dirname+'/map.html'));
     });
 }
 
