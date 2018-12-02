@@ -33,6 +33,10 @@ var appRouter = function (app) {
     app.get("/map", function(req, res) {
         res.sendFile(path.join(__dirname+'/map.html'));
     });
+
+    app.get("/newpackage", function(req, res) {
+        res.status(200).send("New Package!");
+    });
 }
 
 module.exports = appRouter;
