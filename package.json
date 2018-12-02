@@ -18,6 +18,8 @@
   "homepage": "https://github.com/lordmuppet/toggleHDMI#readme",
   "dependencies": {
     "body-parser": "^1.18.3",
-    "express": "^4.16.4"
+    "dateformat": "^3.0.3",
+    "express": "^4.16.4",
+    "node-fetch": "^2.3.0"
   }
 }

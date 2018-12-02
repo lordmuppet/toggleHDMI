@@ -1,4 +1,10 @@
 var path    = require("path");
+var fetch = require('node-fetch');
+var dateFormat = require('dateformat');
+
+global.currentDay = Date.now();
+global.mostRecentPackage; 
+global.numberPackages = 0; 
 
 var appRouter = function (app) {
     app.get("/rpihdmi/off", function (req, res) {
@@ -34,12 +40,60 @@ var appRouter = function (app) {
         res.sendFile(path.join(__dirname+'/map.html'));
     });
 
+    app.get("/packages", function(req, res) {
+
+        // Reset the package count when we go past midnight
+        if(dateFormat(currentDay, "dd") !== dateFormat(Date.now(), "dd")){
+            currentDay = Date.now();
+            numberPackages = 0;
+            mostRecentPackage = null;
+            
+            // Return nothing
+            res.status(200).send("Updated the current date");
+            return 
+        }
+
+        if (numberPackages > 0){
+            var string_to_return = numberPackages === 1 ? numberPackages + " package was delivered today" :
+                numberPackages + " packages were delivered today";
+            res.status(200).send(string_to_return);
+        } else {
+            res.status(200).send("");
+        }
+        
+    });
+
     app.post("/newpackage", function(req, res) {
 
         var subject = req.body.subject ? req.body.subject : "No subject";
         var message = req.body.message ? req.body.message : "No message";
+
+        numberPackages = numberPackages + 1;
+        mostRecentPackage = Date.now();
+
+        res.status(200).send("Subject: " + subject + "; Message: " + message + "; Last update: " + dateFormat(mostRecentPackage, "yyyy-mm-dd h:MM:ss"));
+
+        // fetch(
+        //     "http://dashboard.local:8080/AddMemo?memoTitle=Packages&item=" + subject + "&level=INFO",
+        //     {
+        //         method: "GET"
+        // })
+        // .then(function (data) {  
+
+        //     fetch(
+        //         "http://dashboard.local:8080/DisplayMemo?memoTitle=Packages&item=ALL",
+        //         {
+        //     })
+        //     .then(function (data) {  
+        //         console.log('Request success: ', data);
+        //         res.status(200).send("Subject: " + subject + "; Message: " + message);
+        //     })         
+        // })  
+        // .catch(function (error) {  
+        //   console.log('Request failure: ', error);
+        //   res.status(500).send("Error");
+        // });
         
-        res.status(200).send("Subject: " + subject + "; Message: " + message);
     });
 }
 
