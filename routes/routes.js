@@ -54,8 +54,8 @@ var appRouter = function (app) {
         }
 
         if (numberPackages > 0){
-            var string_to_return = numberPackages === 1 ? numberPackages + " package was delivered today" :
-                numberPackages + " packages were delivered today";
+            var string_to_return = numberPackages === 1 ? numberPackages + " package delivered today" :
+                numberPackages + " packages delivered today";
             res.status(200).send(string_to_return);
         } else {
             res.status(200).send("");
