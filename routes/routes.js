@@ -34,8 +34,12 @@ var appRouter = function (app) {
         res.sendFile(path.join(__dirname+'/map.html'));
     });
 
-    app.get("/newpackage", function(req, res) {
-        res.status(200).send("New Package!");
+    app.post("/newpackage", function(req, res) {
+
+        var subject = req.body.subject ? req.body.subject : "No subject";
+        var message = req.body.message ? req.body.message : "No message";
+        
+        res.status(200).send("Subject: " + subject + "; Message: " + message);
     });
 }
 
