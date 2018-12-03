@@ -60,7 +60,7 @@ var appRouter = function (app) {
             var string_to_return="";
                 
             for (i=0; i<numberPackages; i++){
-                string_to_return = string_to_return + "<i class='fas fa-box-open'></i>&nbsp;";
+                string_to_return = string_to_return + "<i class='fa fa-gift'></i>";
             }
             res.status(200).send(string_to_return);
         } else {
