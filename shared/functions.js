@@ -11,14 +11,18 @@ function arePointsNear(checkLat, checkLong, centerLat, centerLong, km) {
 module.exports = {
     getAddress: function (location, name) {
 
-        var lat = location.location.latitude;
-        var long = location.location.longitude;
-
-        if (arePointsNear(lat, long, parseFloat(process.env.HOME_LAT), parseFloat(process.env.HOME_LONG), 0.3) ) {
-            return "<p>" + name + ": <i class='fa fa-home'></i></p>";
+        if ( !location || location.length === 0 ) {
+            return "";
         }
 
-        return "<p>" + name + ": " + location.location.address.streetAddress + ", " + location.location.address.locality + "<p>";
+        var lat = location[0].location.latitude;
+        var long = location[0].location.longitude;
+
+        if (arePointsNear(lat, long, parseFloat(process.env.HOME_LAT), parseFloat(process.env.HOME_LONG), 0.3) ) {
+            return name + ": <i class='fa fa-home'></i>";
+        }
+
+        return name + ": " + location[0].location.address.streetAddress + ", " + location[0].location.address.locality;
 
     },
     subtract: function (num1, num2) {

@@ -69,13 +69,13 @@ var appRouter = function (app) {
                 return obj.id === first_id
               });
 
-            string_to_return = getAddress(first_location[0], first_name)
+            string_to_return = getAddress(first_location, first_name)
             
             var second_location = locations.filter(obj => {
                 return obj.id === second_id
               });
 
-            string_to_return = string_to_return + getAddress(second_location[0], second_name);
+            string_to_return = string_to_return + "<br>" + getAddress(second_location, second_name);
             
             res.status(200).send(string_to_return);
 
