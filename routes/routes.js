@@ -56,7 +56,7 @@ var appRouter = function (app) {
         var string_to_return = "";
         var getAddress = require('../shared/functions.js').getAddress;
 
-        var output_template = "<table><tr><td>{{first_name}}</td><td>@</td><td>{{{first_location}}}</td></tr><tr><td>{{second_name}}</td><td>@</td><td>{{{second_location}}}</td></tr></table>";
+        var output_template = "<table><tr><td class='name'>{{first_name}}</td><td class='at'>@</td><td class='location'>{{{first_location}}}</td></tr><tr><td class='name'>{{second_name}}</td><td class='at'>@</td><td class='location'>{{{second_location}}}</td></tr></table>";
 
         console.log(iCloud)
         var cloud = new iCloud(apple_id, password);
