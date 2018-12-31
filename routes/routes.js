@@ -133,7 +133,7 @@ var appRouter = function (app) {
             var output = mustache.render(output_template, view);
 
             // Create an iframe as the MMM-REST table won't show it otherwise
-            var iframe = "<iframe width='320' height='320' frameBorder='0' srcdoc=\""+ output + "\"></iframe>";
+            var iframe = "<iframe width='320' height='320' frameBorder='0'  allowtransparency='true' srcdoc=\""+ output + "\"></iframe>";
 
             res.status(200).send(iframe);
 
