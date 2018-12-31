@@ -28,7 +28,7 @@ module.exports = {
         for (let poi of pois ){
            
             if (arePointsNear(lat, long, poi.latitude, poi.longitude, parseFloat(process.env.RADIUS_KM)) ) {
-                console.log("Using poi: " + poi.name);
+                console.log("For "+ name + " Using poi: " + poi.name);
                 return poi.display;
             }
 

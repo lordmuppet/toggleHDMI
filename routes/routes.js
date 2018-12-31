@@ -58,11 +58,11 @@ var appRouter = function (app) {
 
         var output_template = "<table><tr><td class='name'>{{{first_name}}}</td><td class='at'>@</td><td class='location'>{{{first_location}}}</td></tr><tr><td class='name'>{{{second_name}}}</td><td class='at'>@</td><td class='location'>{{{second_location}}}</td></tr></table>";
 
-        console.log(iCloud)
+        //console.log(iCloud)
         var cloud = new iCloud(apple_id, password);
 
         cloud.getLocations(function (err, result) {
-            console.log(err, result)
+            //console.log(err, result)
 
             var locations = result.locations;
 

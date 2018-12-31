@@ -36,7 +36,7 @@ iCloud.prototype = {
     .replace('{0}', this.clientBuildNumber)
     .replace('{1}', this.clientId);
 
-    console.log(endpoint);
+    //console.log(endpoint);
 
     var options = {
       host: "setup.icloud.com",
@@ -56,7 +56,7 @@ iCloud.prototype = {
     });
 
     var request = https.request(options, function(res) {
-      console.log('request')
+      //console.log('request')
 
       if (res.headers['set-cookie']) me.cookie = res.headers['set-cookie'];
 
@@ -70,7 +70,7 @@ iCloud.prototype = {
 
         me.instance = JSON.parse(buffer);
 
-        console.log('instance', me.instance);
+        //console.log('instance', me.instance);
 
         var dsid = me.instance.dsInfo.dsid;
         var getFmfUrl = '/fmipservice/client/fmfWeb/initClient?clientBuildNumber={1}&clientId={2}&dsid={3}'
@@ -78,9 +78,9 @@ iCloud.prototype = {
         .replace('{2}', me.clientId)
         .replace('{3}', dsid); // &id={4}
 
-        console.log(getFmfUrl);
+        //console.log(getFmfUrl);
 
-        console.log(me.instance.webservices)
+        //console.log(me.instance.webservices)
         var options2 = {
           host: me.instance.webservices.fmf.url.replace('https://', '').replace(':443', ''),
           path: getFmfUrl,
@@ -101,9 +101,9 @@ iCloud.prototype = {
           });
 
           res.on('end', function() {
-            console.log(buf2)
+            //console.log(buf2)
             var data = JSON.parse(buf2);
-            console.log(JSON.stringify(data, null, 2));
+            //console.log(JSON.stringify(data, null, 2));
             callback(null, data);
           });
         });
