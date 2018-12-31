@@ -1,0 +1,14 @@
+[
+    {
+        "latitude":50.00000,
+        "longitude":-74.00000,
+        "name":"Work",
+        "display": "<i class='fa fa-building'></i>"
+    },
+    {
+        "latitude":45.00000,
+        "longitude":-70.00000,
+        "name":"Home",
+        "display": "<i class='fa fa-home'></i>"
+    }
+]

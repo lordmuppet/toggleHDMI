@@ -17,10 +17,22 @@ module.exports = {
 
         var lat = location[0].location.latitude;
         var long = location[0].location.longitude;
+        var fs = require("fs");
 
-        if (arePointsNear(lat, long, parseFloat(process.env.HOME_LAT), parseFloat(process.env.HOME_LONG), parseFloat(process.env.HOME_RADIUS_KM)) ) {
-            return "<i class='fa fa-home'></i>";
-        }
+        // Get Points of interest from file
+        var contents = fs.readFileSync("./shared/pois.json");
+        // Define to JSON type
+        var pois = JSON.parse(contents);
+
+        // Check each poi against the provided user's location
+        for (let poi of pois ){
+           
+            if (arePointsNear(lat, long, poi.latitude, poi.longitude, parseFloat(process.env.RADIUS_KM)) ) {
+                console.log("Using poi: " + poi.name);
+                return poi.display;
+            }
+
+        };
         
         return location[0].location.address.streetAddress + ", " + location[0].location.address.locality;
 
