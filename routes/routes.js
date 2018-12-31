@@ -132,7 +132,10 @@ var appRouter = function (app) {
             // Join the locations to the return template
             var output = mustache.render(output_template, view);
 
-            res.status(200).send(output);
+            // Create an iframe as the MMM-REST table won't show it otherwise
+            var iframe = "<iframe width='425' height='425' frameBorder='0' srcdoc=\""+ output + "\"></iframe>";
+
+            res.status(200).send(iframe);
 
         });
 
