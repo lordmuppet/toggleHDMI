@@ -90,6 +90,54 @@ var appRouter = function (app) {
 
     });
 
+    //
+    // Get a map with the locations of our devices pinned on
+    //
+    app.get("/locationsmap", function (req, res) {
+        
+        var apple_id = process.env.APPLE_ID;
+        var password = process.env.APPLE_PASSWORD;
+        var first_id = process.env.FIRST_ID;
+        var second_id = process.env.SECOND_ID;
+        var string_to_return = "";
+        var getAddress = require('../shared/functions.js').getAddress;
+
+        //console.log(iCloud)
+        var cloud = new iCloud(apple_id, password);
+
+        cloud.getLocations(function (err, result) {
+            //console.log(err, result)
+
+            var fs = require("fs");
+            var output_template = fs.readFileSync("./routes/locationmap.html",'utf8');
+
+            var locations = result.locations;
+
+            var first_location = locations.filter(obj => {
+                return obj.id === first_id
+              });
+
+            var second_location = locations.filter(obj => {
+                return obj.id === second_id
+              });
+   
+            var view = {
+                lat1: first_location[0].location.latitude,
+                long1: first_location[0].location.longitude,
+                lat2: second_location[0].location.latitude,
+                long2: second_location[0].location.longitude,
+                apiKey: process.env.GOOGLE_MAPS_API_KEY,
+              };
+
+            // Join the locations to the return template
+            var output = mustache.render(output_template, view);
+
+            res.status(200).send(output);
+
+        });
+
+    });
+
 
     app.get("/packages", function (req, res) {
 
