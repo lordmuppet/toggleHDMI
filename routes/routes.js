@@ -2,6 +2,7 @@ var path = require("path");
 var fetch = require('node-fetch');
 var dateFormat = require('dateformat');
 var iCloud = require('../shared/icloud.js');
+var mustache = require('mustache');
 require('dotenv').config();
 
 
@@ -50,12 +51,12 @@ var appRouter = function (app) {
         
         var apple_id = process.env.APPLE_ID;
         var password = process.env.APPLE_PASSWORD;
-        var first_name = process.env.FIRST_NAME;
-        var second_name = process.env.SECOND_NAME;
         var first_id = process.env.FIRST_ID;
         var second_id = process.env.SECOND_ID;
         var string_to_return = "";
         var getAddress = require('../shared/functions.js').getAddress;
+
+        var output_template = "<table><tr><td>{{first_name}}</td><td>@</td><td>{{{first_location}}}</td></tr><tr><td>{{second_name}}</td><td>@</td><td>{{{second_location}}}</td></tr></table>";
 
         console.log(iCloud)
         var cloud = new iCloud(apple_id, password);
@@ -69,15 +70,21 @@ var appRouter = function (app) {
                 return obj.id === first_id
               });
 
-            string_to_return = getAddress(first_location, first_name)
-            
             var second_location = locations.filter(obj => {
                 return obj.id === second_id
               });
+   
+            var view = {
+                first_name: process.env.FIRST_NAME,
+                second_name: process.env.SECOND_NAME,
+                first_location: getAddress(first_location, process.env.FIRST_NAME),
+                second_location: getAddress(second_location, process.env.SECOND_NAME),
+              };
 
-            string_to_return = string_to_return + "<br>" + getAddress(second_location, second_name);
-            
-            res.status(200).send(string_to_return);
+            // Join the locations to the return template
+            var output = mustache.render(output_template, view);
+
+            res.status(200).send(output);
 
         });
 
