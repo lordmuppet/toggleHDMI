@@ -18,10 +18,10 @@ module.exports = {
         var lat = location[0].location.latitude;
         var long = location[0].location.longitude;
 
-        if (arePointsNear(lat, long, parseFloat(process.env.HOME_LAT), parseFloat(process.env.HOME_LONG), 0.3) ) {
+        if (arePointsNear(lat, long, parseFloat(process.env.HOME_LAT), parseFloat(process.env.HOME_LONG), parseFloat(process.env.HOME_RADIUS_KM)) ) {
             return "<i class='fa fa-home'></i>";
         }
-
+        
         return location[0].location.address.streetAddress + ", " + location[0].location.address.locality;
 
     },
