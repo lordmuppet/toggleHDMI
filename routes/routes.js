@@ -39,7 +39,7 @@ var appRouter = function (app) {
             res.status(401).send("Unauthorized");
             return;
         }
-        
+
         const exec = require('child_process').exec;
         var turnoff = exec('sh rpi-hdmi.sh on',
             (error, stdout, stderr) => {
@@ -170,6 +170,11 @@ var appRouter = function (app) {
 
     app.get("/packages", function (req, res) {
 
+        if (!isSecretValid(req)){
+            res.status(401).send("Unauthorized");
+            return;
+        }
+
         // Reset the package count when we go past midnight
         if (dateFormat(currentDay, "dd") !== dateFormat(Date.now(), "dd")) {
             currentDay = Date.now();
@@ -199,6 +204,11 @@ var appRouter = function (app) {
 
     app.post("/newpackage", function (req, res) {
 
+        if (!isSecretValid(req)){
+            res.status(401).send("Unauthorized");
+            return;
+        }
+
         var subject = req.body.subject ? req.body.subject : "No subject";
         var message = req.body.message ? req.body.message : "No message";
 
@@ -206,27 +216,6 @@ var appRouter = function (app) {
         mostRecentPackage = Date.now();
 
         res.status(200).send("Subject: " + subject + "; Message: " + message + "; Last update: " + dateFormat(mostRecentPackage, "yyyy-mm-dd h:MM:ss"));
-
-        // fetch(
-        //     "http://dashboard.local:8080/AddMemo?memoTitle=Packages&item=" + subject + "&level=INFO",
-        //     {
-        //         method: "GET"
-        // })
-        // .then(function (data) {  
-
-        //     fetch(
-        //         "http://dashboard.local:8080/DisplayMemo?memoTitle=Packages&item=ALL",
-        //         {
-        //     })
-        //     .then(function (data) {  
-        //         console.log('Request success: ', data);
-        //         res.status(200).send("Subject: " + subject + "; Message: " + message);
-        //     })         
-        // })  
-        // .catch(function (error) {  
-        //   console.log('Request failure: ', error);
-        //   res.status(500).send("Error");
-        // });
 
     });
 }
