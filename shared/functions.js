@@ -9,6 +9,14 @@ function arePointsNear(checkLat, checkLong, centerLat, centerLong, km) {
 };
 
 module.exports = {
+    isSecretValid: function (req) {
+
+        if (req.query.q && req.query.q === process.env.SECRET){
+            return true;
+        } else {
+            return false;
+        }
+    },
     getAddress: function (location, name) {
 
         if ( !location || location.length === 0 ) {

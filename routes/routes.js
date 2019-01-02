@@ -3,6 +3,7 @@ var fetch = require('node-fetch');
 var dateFormat = require('dateformat');
 var iCloud = require('../shared/icloud.js');
 var mustache = require('mustache');
+var isSecretValid = require('../shared/functions.js').isSecretValid;
 require('dotenv').config();
 
 
@@ -13,6 +14,11 @@ global.numberPackages = 0;
 var appRouter = function (app) {
 
     app.get("/rpihdmi/off", function (req, res) {
+
+        if (!isSecretValid(req)){
+            res.status(401).send("Unauthorized");
+            return;
+        }
 
         const exec = require('child_process').exec;
         var turnoff = exec('sh rpi-hdmi.sh off',
@@ -29,6 +35,11 @@ var appRouter = function (app) {
 
     app.get("/rpihdmi/on", function (req, res) {
 
+        if (!isSecretValid(req)){
+            res.status(401).send("Unauthorized");
+            return;
+        }
+        
         const exec = require('child_process').exec;
         var turnoff = exec('sh rpi-hdmi.sh on',
             (error, stdout, stderr) => {
@@ -57,6 +68,10 @@ var appRouter = function (app) {
         var string_to_return = "";
         var getAddress = require('../shared/functions.js').getAddress;
 
+        if (!isSecretValid(req)){
+            res.status(401).send("Unauthorized");
+            return;
+        }
         var output_template = "<table><tr><td class='name'>{{{first_name}}}</td><td class='at'>@</td><td class='location'>{{{first_location}}}</td></tr><tr><td class='name'>{{{second_name}}}</td><td class='at'>@</td><td class='location'>{{{second_location}}}</td></tr></table>";
 
         //console.log(iCloud)
@@ -101,6 +116,11 @@ var appRouter = function (app) {
         var first_id = process.env.FIRST_ID;
         var second_id = process.env.SECOND_ID;
         var isAtHome = require('../shared/functions.js').isAtHome;
+    
+        if (!isSecretValid(req)){
+            res.status(401).send("Unauthorized");
+            return;
+        }
 
         //console.log(iCloud)
         var cloud = new iCloud(apple_id, password);
