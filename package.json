@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/lordmuppet/toggleHDMI#readme",
   "dependencies": {
+    "bluebird": "^3.5.5",
     "body-parser": "^1.18.3",
     "dateformat": "^3.0.3",
     "dotenv": "^6.2.0",
@@ -26,6 +27,7 @@
     "https": "^1.0.0",
     "mustache": "^3.0.1",
     "node-fetch": "^2.3.0",
-    "node-uuid": "^1.4.8"
+    "node-uuid": "^1.4.8",
+    "request": "^2.88.0"
   }
 }
