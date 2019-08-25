@@ -1,10 +1,11 @@
 var path = require("path");
 var fetch = require('node-fetch');
 var dateFormat = require('dateformat');
-var iCloud = require('../shared/icloud.js');
 var FindMyFriends = require('../shared/findmyfriends.js');
 var mustache = require('mustache');
-var isSecretValid = require('../shared/functions.js').isSecretValid;
+var isSecretValid = require ('../shared/functions.js').isSecretValid;
+var getLocations = require ('../shared/functions.js').getLocations;
+var fs = require("fs");
 require('dotenv').config();
 
 
@@ -60,181 +61,54 @@ var appRouter = function (app) {
     //
     // Get the locations of all our devices
     //
-    app.get("/locations", function (req, res) {
-
-        var apple_id = process.env.APPLE_ID;
-        var password = process.env.APPLE_PASSWORD;
-        var first_id = process.env.FIRST_ID;
-        var second_id = process.env.SECOND_ID;
-        var string_to_return = "";
-        var getAddress = require('../shared/functions.js').getAddress;
+    app.get("/locations", async (req, res, next) => {
 
         if (!isSecretValid(req)){
             res.status(401).send("Unauthorized");
             return;
         }
-        var output_template = "<table><tr><td class='name'>{{{first_name}}}</td><td class='at'>@</td><td class='location'>{{{first_location}}}</td></tr><tr><td class='name'>{{{second_name}}}</td><td class='at'>@</td><td class='location'>{{{second_location}}}</td></tr></table>";
 
-        var findMyFriends = new FindMyFriends();
+        // Create output template that has repeating rows for locations
+        var output_template = "<table>{{#locations}}" + 
+            "<tr><td class='name'>{{{name}}}</td><td class='at'>@</td>" +
+            "<td class='location'>{{{location}}}</td></tr>" +
+            "{{/locations}}</table>";
 
-        findMyFriends.getLocations(apple_id, password).then(
-            function (locations) {
-                //console.log(err, result)
+        const outputView = await getLocations();
 
-                var first_location = locations.filter(obj => {
-                    return obj.id === first_id
-                });
+        // Join the locations to the return template
+        var output = mustache.render(output_template, outputView);
 
-                var second_location = locations.filter(obj => {
-                    return obj.id === second_id
-                });
-
-                var view = {
-                    first_name: process.env.FIRST_NAME,
-                    second_name: process.env.SECOND_NAME,
-                    first_location: getAddress(first_location, process.env.FIRST_NAME),
-                    second_location: getAddress(second_location, process.env.SECOND_NAME),
-                };
-
-                // Join the locations to the return template
-                var output = mustache.render(output_template, view);
-
-                res.status(200).send(output);
-
-            });
-
-        // findMyFriends.getAllLocations();
-
-        // //console.log(iCloud)
-        // var cloud = new iCloud(apple_id, password);
-
-        // cloud.getLocations(function (err, result) {
-        //     //console.log(err, result)
-
-        //     var locations = result.locations;
-
-        //     var first_location = locations.filter(obj => {
-        //         return obj.id === first_id
-        //     });
-
-        //     var second_location = locations.filter(obj => {
-        //         return obj.id === second_id
-        //     });
-
-        //     var view = {
-        //         first_name: process.env.FIRST_NAME,
-        //         second_name: process.env.SECOND_NAME,
-        //         first_location: getAddress(first_location, process.env.FIRST_NAME),
-        //         second_location: getAddress(second_location, process.env.SECOND_NAME),
-        //     };
-
-        //     // Join the locations to the return template
-        //     var output = mustache.render(output_template, view);
-
-        //     res.status(200).send(output);
-
-        // });
-
+        res.status(200).send(output);
     });
 
     //
     // Get a map with the locations of our devices pinned on
     //
-    app.get("/locationsmap", function (req, res) {
-
-        var apple_id = process.env.APPLE_ID;
-        var password = process.env.APPLE_PASSWORD;
-        var first_id = process.env.FIRST_ID;
-        var second_id = process.env.SECOND_ID;
-        var isAtHome = require('../shared/functions.js').isAtHome;
+    app.get("/locationsmap", async (req, res, next) => {
     
         if (!isSecretValid(req)){
             res.status(401).send("Unauthorized");
             return;
         }
+        var output_template = fs.readFileSync("./routes/locationmap.html", 'utf8');
+        
+        const outputView = await getLocations();
 
-        var findMyFriends = new FindMyFriends();
+        if (outputView.allAtHome !== true ) {
+            res.status(200).send("");
+        } else {
 
-        findMyFriends.getLocations(apple_id, password).then(
-            function (locations) {
+            outputView.apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
-                var fs = require("fs");
-                var output_template = fs.readFileSync("./routes/locationmap.html", 'utf8');
+            // Join the locations to the return template
+            var output = mustache.render(output_template, outputView);
 
-                var first_location = locations.filter(obj => {
-                    return obj.id === first_id
-                });
+            // Create an iframe as the MMM-REST table won't show it otherwise
+            var iframe = "<iframe width='320' height='320' frameBorder='0'  allowtransparency='true' srcdoc=\"" + output + "\"></iframe>";
 
-                var second_location = locations.filter(obj => {
-                    return obj.id === second_id
-                });
-
-                if (isAtHome(first_location, process.env.FIRST_NAME) &&
-                    isAtHome(second_location, process.env.SECOND_NAME)) {
-                    res.status(200).send("");
-                } else {
-
-                    var view = {
-                        lat1: first_location[0].location.latitude,
-                        long1: first_location[0].location.longitude,
-                        lat2: second_location[0].location.latitude,
-                        long2: second_location[0].location.longitude,
-                        apiKey: process.env.GOOGLE_MAPS_API_KEY,
-                    };
-
-                    // Join the locations to the return template
-                    var output = mustache.render(output_template, view);
-
-                    // Create an iframe as the MMM-REST table won't show it otherwise
-                    var iframe = "<iframe width='320' height='320' frameBorder='0'  allowtransparency='true' srcdoc=\"" + output + "\"></iframe>";
-
-                    res.status(200).send(iframe);
-                }
-
-            });
-
-        // //console.log(iCloud)
-        // var cloud = new iCloud(apple_id, password);
-
-        // cloud.getLocations(function (err, result) {
-        //     //console.log(err, result)
-
-        //     var fs = require("fs");
-        //     var output_template = fs.readFileSync("./routes/locationmap.html", 'utf8');
-
-        //     var locations = result.locations;
-
-        //     var first_location = locations.filter(obj => {
-        //         return obj.id === first_id
-        //     });
-
-        //     var second_location = locations.filter(obj => {
-        //         return obj.id === second_id
-        //     });
-
-        //     if (isAtHome(first_location, process.env.FIRST_NAME) && 
-        //         isAtHome(second_location, process.env.SECOND_NAME)) {
-        //         res.status(200).send("");
-        //     } else {
-
-        //         var view = {
-        //             lat1: first_location[0].location.latitude,
-        //             long1: first_location[0].location.longitude,
-        //             lat2: second_location[0].location.latitude,
-        //             long2: second_location[0].location.longitude,
-        //             apiKey: process.env.GOOGLE_MAPS_API_KEY,
-        //         };
-
-        //         // Join the locations to the return template
-        //         var output = mustache.render(output_template, view);
-
-        //         // Create an iframe as the MMM-REST table won't show it otherwise
-        //         var iframe = "<iframe width='320' height='320' frameBorder='0'  allowtransparency='true' srcdoc=\"" + output + "\"></iframe>";
-
-        //         res.status(200).send(iframe);
-        //     }
-
-        // });
+            res.status(200).send(iframe);
+        }
 
     });
 

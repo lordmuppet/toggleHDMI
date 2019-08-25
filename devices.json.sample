@@ -1,0 +1,20 @@
+[
+    {
+        "name":"Person1",
+        "id":"xxx",
+        "type":"apple",
+        "icon":"http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+    },
+    {
+        "name":"Person2",
+        "id":"xxx",
+        "type":"apple",
+        "icon":"http://maps.google.com/mapfiles/ms/icons/purple-dot.png"
+    },
+    {
+        "name":"Person3",
+        "id":"xxx",
+        "type":"xplora",
+        "icon":"http://maps.google.com/mapfiles/ms/icons/pink-dot.png"
+    }
+]

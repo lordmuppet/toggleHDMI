@@ -5,3 +5,4 @@ node_modules
 .env
 pois.json
 package-lock.json
+devices.json

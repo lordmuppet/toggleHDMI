@@ -183,41 +183,26 @@
 
     var bounds = new google.maps.LatLngBounds();
 
-    var icon1={
-        url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png', // url
+    {{#locations}}
+    
+    var icon{{index}}={
+        url: '{{icon}}', // url
         //scaledSize: new google.maps.Size(40, 40),
     }
    
-    // Location 1
-    var marker1 = new google.maps.Marker({
+    // Location 
+    var marker{{index}} = new google.maps.Marker({
       position: {
-        lat: {{lat1}},
-        lng: {{long1}}
+        lat: {{lat}},
+        lng: {{long}}
       },
-      icon: icon1,
+      icon: icon{{index}},
       map: map
     });
 
     //extend the bounds to include each marker's position
-    bounds.extend(marker1.position);
-
-    var icon2={
-        url: 'http://maps.google.com/mapfiles/ms/icons/purple-dot.png', // url
-        //scaledSize: new google.maps.Size(40, 40),
-    }
-    
-    // Location 2
-    var marker2 = new google.maps.Marker({
-      position: {
-        lat: {{lat2}},
-        lng: {{long2}}
-      },
-      icon: icon2,
-      map: map
-    });
-
-    //extend the bounds to include each marker's position
-    bounds.extend(marker2.position);
+    bounds.extend(marker{{index}}.position);
+    {{/locations}}
     
     //now fit the map to the newly inclusive bounds
     map.fitBounds(bounds);
