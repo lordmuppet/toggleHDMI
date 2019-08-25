@@ -95,7 +95,7 @@ var appRouter = function (app) {
         
         const outputView = await getLocations();
 
-        if (outputView.allAtHome !== true ) {
+        if (outputView.allAtHome === true ) {
             res.status(200).send("");
         } else {
 
