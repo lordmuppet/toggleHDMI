@@ -57,6 +57,7 @@ module.exports = {
                     long: location.location.longitude,
                     location: needStreetAddress ? await module.exports.getAddress(location.location, user[0]) : null,
                     icon: user[0].icon,
+                    radiusKm: user[0].radiusKm,
                 }
             }
         });
@@ -76,6 +77,7 @@ module.exports = {
                     long: location.result.data.coordinate.longitude,
                     location: needStreetAddress ? await module.exports.getAddress(location.result.data.coordinate, user[0]) : null,
                     icon: user[0].icon,
+                    radiusKm: user[0].radiusKm,
                 }
             }
         })
@@ -162,7 +164,7 @@ module.exports = {
         // Check each poi against the provided user's location
         for (let poi of pois ){
            
-            if (arePointsNear(lat, long, poi.latitude, poi.longitude, parseFloat(process.env.RADIUS_KM)) ) {
+            if (arePointsNear(lat, long, poi.latitude, poi.longitude, user.radiusKm) ) {
                 console.log("For "+ user.name + " Using poi: " + poi.name);
                 return poi.display;
             }
@@ -218,7 +220,7 @@ module.exports = {
 
         // Check each poi against the provided user's location, and return true if at home
         for (let poi of pois ){
-            if (poi.name === "Home" && arePointsNear(lat, long, poi.latitude, poi.longitude, parseFloat(process.env.RADIUS_KM)) ) {
+            if (poi.name === "Home" && arePointsNear(lat, long, poi.latitude, poi.longitude, location.radiusKm) ) {
                 return true;
             }
         }
