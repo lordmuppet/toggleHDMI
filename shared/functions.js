@@ -23,7 +23,9 @@ module.exports = {
     },
 
     // Get all the locations from all devices
-    getLocations: async function(){
+    // needStreetAddress param used to check if needed
+    // to do geoCoding for Xplora
+    getLocations: async function(needStreetAddress){
 
         var apple_id = process.env.APPLE_ID;
         var password = process.env.APPLE_PASSWORD;
@@ -53,7 +55,7 @@ module.exports = {
                     id: location.id,
                     lat: location.location.latitude,
                     long: location.location.longitude,
-                    location: await module.exports.getAddress(location.location, user[0]),
+                    location: needStreetAddress ? await module.exports.getAddress(location.location, user[0]) : null,
                     icon: user[0].icon,
                 }
             }
@@ -72,7 +74,7 @@ module.exports = {
                     id: user[0].id,
                     lat: location.result.data.coordinate.latitude,
                     long: location.result.data.coordinate.longitude,
-                    location: await module.exports.getAddress(location.result.data.coordinate, user[0]),
+                    location: needStreetAddress ? await module.exports.getAddress(location.result.data.coordinate, user[0]) : null,
                     icon: user[0].icon,
                 }
             }

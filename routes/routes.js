@@ -74,7 +74,8 @@ var appRouter = function (app) {
             "<td class='location'>{{{location}}}</td></tr>" +
             "{{/locations}}</table>";
 
-        const outputView = await getLocations();
+        // Get locations with street addresses
+        const outputView = await getLocations(true);
 
         // Join the locations to the return template
         var output = mustache.render(output_template, outputView);
@@ -93,7 +94,8 @@ var appRouter = function (app) {
         }
         var output_template = fs.readFileSync("./routes/locationmap.html", 'utf8');
         
-        const outputView = await getLocations();
+        // Get locations without street addresses
+        const outputView = await getLocations(false);
 
         if (outputView.allAtHome === true ) {
             res.status(200).send("");
