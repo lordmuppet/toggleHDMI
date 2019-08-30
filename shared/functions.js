@@ -98,7 +98,7 @@ module.exports = {
 
         // If there are no xplora device return nothing
         if (xploraUsers.length === 0){
-            return null;
+            return [];
         }
 
         const headers = {
