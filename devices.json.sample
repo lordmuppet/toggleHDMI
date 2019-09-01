@@ -16,5 +16,11 @@
         "id":"xxx",
         "type":"xplora",
         "icon":"http://maps.google.com/mapfiles/ms/icons/pink-dot.png"
+    },
+        {
+        "name":"Person",
+        "id":"xxx",
+        "type":"ojoy",
+        "icon":"http://maps.google.com/mapfiles/kml/paddle/D.png"
     }
 ]
