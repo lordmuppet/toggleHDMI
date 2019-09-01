@@ -15,7 +15,7 @@ function arePointsNear(checkLat, checkLong, centerLat, centerLong, km) {
 module.exports = {
     isSecretValid: function (req) {
 
-        if (req.query.q && req.query.q === process.env.SECRET){
+        if (req.query.q && req.query.q === process.env.SECRET) {
             return true;
         } else {
             return false;
@@ -25,7 +25,7 @@ module.exports = {
     // Get all the locations from all devices
     // needStreetAddress param used to check if needed
     // to do geoCoding for Xplora
-    getLocations: async function(needStreetAddress){
+    getLocations: async function (needStreetAddress) {
 
         var apple_id = process.env.APPLE_ID;
         var password = process.env.APPLE_PASSWORD;
@@ -36,8 +36,8 @@ module.exports = {
         // Define to JSON type
         const userDevices = JSON.parse(userDevicesBin);
 
-        const appleLocations = await findMyFriends.getLocations(apple_id, password); 
-        
+        const appleLocations = await findMyFriends.getLocations(apple_id, password);
+
         // This will be the output template for mustache
         // We will fill in the locations array with data from apple and Xplora
         let outputView = {
@@ -46,16 +46,21 @@ module.exports = {
         }
 
         // Get apple locations
-        const locations = appleLocations.map( async (location, index) => {
-            const user = userDevices.filter( device => device.id === location.id);
-            if (user.length >0){
+        const locations = appleLocations.map(async (location, index) => {
+            const user = userDevices.filter(device => device.id === location.id);
+            if (user.length > 0) {
                 return {
                     index: index,
                     name: user[0].name,
                     id: location.id,
                     lat: location.location.latitude,
                     long: location.location.longitude,
-                    location: needStreetAddress ? await module.exports.getAddress(location.location, user[0]) : null,
+                    location: needStreetAddress ? 
+                        await module.exports.getAddress(location.location.latitude, 
+                            location.location.longitude, 
+                            location.location.address.streetAddress + ", " + location.location.address.locality,
+                            user[0]) 
+                        : null,
                     icon: user[0].icon,
                     radiusKm: user[0].radiusKm,
                 }
@@ -64,18 +69,44 @@ module.exports = {
 
         outputView.locations = await Promise.all(locations);
 
-        // Get xplora watch locations
-        const xploraLocations = await module.exports.getXploraLocation(userDevices);
-        const moreLocations = xploraLocations.map( async (location, index) => {
-            const user = userDevices.filter( device => device.id === location.result.deviceId);
-            if (user.length > 0){
-                return{
+        // // Get xplora watch locations
+        // const xploraLocations = await module.exports.getXploraLocation(userDevices);
+        // const moreLocations = xploraLocations.map(async (location, index) => {
+        //     const user = userDevices.filter(device => device.id === location.result.deviceId);
+        //     if (user.length > 0) {
+        //         return {
+        //             index: index + outputView.locations.length,
+        //             name: user[0].name,
+        //             id: user[0].id,
+        //             lat: location.result.data.coordinate.latitude,
+        //             long: location.result.data.coordinate.longitude,
+        //             location: needStreetAddress ? await module.exports.getAddress(location.result.data.coordinate, user[0]) : null,
+        //             icon: user[0].icon,
+        //             radiusKm: user[0].radiusKm,
+        //         }
+        //     }
+        // })
+
+        const ojoyLocations = await module.exports.getOjoyLocation(userDevices);
+        const moreLocations = ojoyLocations.map(async (location, index) => {
+            const user = userDevices.filter(device => device.id === location.d.Data.ChildId.toString());
+            const lat = parseFloat(new Buffer(location.d.Data.Lat, 'base64').toString('ascii'));
+            const long = parseFloat(new Buffer(location.d.Data.Lng, 'base64').toString('ascii'))
+            
+            if (user.length > 0) {
+                return {
                     index: index + outputView.locations.length,
                     name: user[0].name,
                     id: user[0].id,
-                    lat: location.result.data.coordinate.latitude,
-                    long: location.result.data.coordinate.longitude,
-                    location: needStreetAddress ? await module.exports.getAddress(location.result.data.coordinate, user[0]) : null,
+                    lat: lat,
+                    long: long,
+                    location: needStreetAddress ? 
+                        await module.exports.getAddress(
+                            lat, 
+                            long, 
+                            null,
+                            user[0]) 
+                        : null,
                     icon: user[0].icon,
                     radiusKm: user[0].radiusKm,
                 }
@@ -86,18 +117,61 @@ module.exports = {
         outputView.locations = outputView.locations.concat(await Promise.all(moreLocations));
 
         // check if all the locations are at home
-        outputView.allAtHome = outputView.locations.every( module.exports.isAtHome )
+        outputView.allAtHome = outputView.locations.every(module.exports.isAtHome)
 
         return outputView;
+
+    },
+    // Get the OJoy watch location
+    getOjoyLocation: async function (devices) {
+
+        const ojoyUsers = devices.filter(device => device.type === 'ojoy');
+
+        // If there are no ojoy device return nothing
+        if (ojoyUsers.length === 0) {
+            return [];
+        }
+
+        const headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "Ojoy watch/1.7 (iPhone; iOS 12.3.1; Scale/2.00)",
+        }
+
+        const locationPromises = ojoyUsers.map(async (users) => {
+
+            const body = {
+                "childId": users.id,
+                "userId":process.env.OJOY_USER_ID,
+                "SessionKey":process.env.OJOY_SESSION_TOKEN
+            }
+
+            // Fetch the location data
+            const location = process.env.OJOY_LOCATION_URL;
+            const settings = {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(body)
+            };
+            try {
+                const fetchResponse = await fetch(location, settings);
+                const data = await fetchResponse.json();
+                return data;
+            } catch (e) {
+                console.log(e)
+                return e;
+            }
+
+        })
+        return Promise.all(locationPromises);
 
     },
     // Get the Xplora watch location
     getXploraLocation: async function (devices) {
 
-        const xploraUsers = devices.filter( device => device.type ==='xplora');
+        const xploraUsers = devices.filter(device => device.type === 'xplora');
 
         // If there are no xplora device return nothing
-        if (xploraUsers.length === 0){
+        if (xploraUsers.length === 0) {
             return [];
         }
 
@@ -118,10 +192,10 @@ module.exports = {
             "X-Parse-App-Display-Version": "2.2.10",
         }
 
-        const locationPromises = xploraUsers.map( async(users) => {
+        const locationPromises = xploraUsers.map(async (users) => {
 
             const body = {
-                "command":"getLast",
+                "command": "getLast",
                 "deviceId": users.id,
             }
 
@@ -139,7 +213,7 @@ module.exports = {
             } catch (e) {
                 console.log(e)
                 return e;
-            } 
+            }
 
         })
         return Promise.all(locationPromises);
@@ -147,14 +221,11 @@ module.exports = {
     },
     // Get the address of the icon of the POI. Uses the 'user/device' settings
     // provided in devices.json
-    getAddress: async function (location, user) {
+    getAddress: async function (lat, long, streetAddress, user) {
 
-        if ( !location || location.length === 0 ) {
+        if (!lat || !long) {
             return "";
         }
-
-        var lat = location.latitude;
-        var long = location.longitude;
 
         // Get Points of interest from file
         var contents = fs.readFileSync("./shared/pois.json");
@@ -162,51 +233,47 @@ module.exports = {
         var pois = JSON.parse(contents);
 
         // Check each poi against the provided user's location
-        for (let poi of pois ){
-           
-            if (arePointsNear(lat, long, poi.latitude, poi.longitude, user.radiusKm) ) {
-                console.log("For "+ user.name + " Using poi: " + poi.name);
+        for (let poi of pois) {
+
+            if (arePointsNear(lat, long, poi.latitude, poi.longitude, user.radiusKm)) {
+                console.log("For " + user.name + " Using poi: " + poi.name);
                 return poi.display;
             }
 
         };
 
-        // Handle user device types differently. Apple provides street details
-        switch (user.type){
-            
-            case 'apple':
-                return location.address.streetAddress + ", " + location.address.locality;
-        
-            case 'xplora':
-                const address =  await module.exports.decodeCoordinatesToAddress(lat, long);
-                return address
-                    .replace('East', 'E')
-                    .replace('West', 'W')
-                    .replace('Street', 'St')
-                    .replace('Avenue', 'Ave');
-            default:
-                
+        // If the streetAddress is provided then use otherwise
+        // get coordinates from Google
+        if (streetAddress){
+            return streetAddress;
+        } else {
+            const address = await module.exports.decodeCoordinatesToAddress(lat, long);
+            return address
+                .replace('East', 'E')
+                .replace('West', 'W')
+                .replace('Street', 'St')
+                .replace('Avenue', 'Ave');
         }
     },
     // Get street address from long lat using Google maps decode
-    decodeCoordinatesToAddress: async function (lat, lon){
+    decodeCoordinatesToAddress: async function (lat, lon) {
 
         const options = {
             provider: 'google',
             httpAdapter: 'https', // Default
-            apiKey: process.env.GOOGLE_MAPS_API_KEY, 
+            apiKey: process.env.GOOGLE_MAPS_API_KEY,
             formatter: null         // 'gpx', 'string', ...
-          };
+        };
 
         // Transform coordinates to address
         var geocoder = NodeGeocoder(options);
         const res = await geocoder.reverse({ lat: lat, lon: lon })
-        
+
         return res[0].streetNumber + ' ' + res[0].streetName + ', ' + res[0].city;
     },
     isAtHome: function (location) {
 
-        if ( !location ) {
+        if (!location) {
             return false;
         }
 
@@ -219,12 +286,12 @@ module.exports = {
         var pois = JSON.parse(contents);
 
         // Check each poi against the provided user's location, and return true if at home
-        for (let poi of pois ){
-            if (poi.name === "Home" && arePointsNear(lat, long, poi.latitude, poi.longitude, location.radiusKm) ) {
+        for (let poi of pois) {
+            if (poi.name === "Home" && arePointsNear(lat, long, poi.latitude, poi.longitude, location.radiusKm)) {
                 return true;
             }
         }
-        
+
         return false;
 
     },
