@@ -8,8 +8,9 @@ const helmet = require("helmet");
 const SSL_LOCATION = process.env.SSL_LOCATION ? process.env.SSL_LOCATION : '/etc/ssl/certs';
 
 const options = {
-  key: fs.readFileSync(SSL_LOCATION + "/my-site-key.pem"),
-  cert: fs.readFileSync(SSL_LOCATION + "/my-site-cert.pem")
+  ca: fs.readFileSync(SSL_LOCATION + "/my-site.ca-bundle"),
+  key: fs.readFileSync(SSL_LOCATION + "/my-site.key"),
+  cert: fs.readFileSync(SSL_LOCATION + "/my-site.crt")
 };
 
 var app = express();
