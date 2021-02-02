@@ -8,3 +8,4 @@ package-lock.json
 devices.json
 *.pem
 /public
+.DS_Store
