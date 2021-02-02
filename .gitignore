@@ -7,3 +7,4 @@ pois.json
 package-lock.json
 devices.json
 *.pem
+/public

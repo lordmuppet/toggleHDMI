@@ -17,6 +17,8 @@ var app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet()); // Add Helmet as a middleware
+app.use(express.static('public'))
+app.use('/.well-known/pki-validation/', express.static('public'))
 
 routes(app);
 
