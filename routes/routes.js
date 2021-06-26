@@ -81,6 +81,7 @@ var appRouter = function (app) {
 
 
         // If the domain matches, allow iframes from that domain
+        console.log(`Domain: ${req.query.domain}, whitelist: ${process.env.DOMAIN_WHITELIST}`);
         if (process.env.DOMAIN_WHITELIST === req.query.domain) {
             res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + req.query.domain);
         }
