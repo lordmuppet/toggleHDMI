@@ -101,6 +101,8 @@ var appRouter = function (app) {
         const outputView = await getLocations(false);
 
         if (outputView.allAtHome === true) {
+            // If the domain matches, allow iframes from that domain
+            res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
             res.status(200).send("");
         } else {
 
