@@ -3,8 +3,8 @@ var fetch = require('node-fetch');
 var dateFormat = require('dateformat');
 var FindMyFriends = require('../shared/findmyfriends.js');
 var mustache = require('mustache');
-var isSecretValid = require ('../shared/functions.js').isSecretValid;
-var getLocations = require ('../shared/functions.js').getLocations;
+var isSecretValid = require('../shared/functions.js').isSecretValid;
+var getLocations = require('../shared/functions.js').getLocations;
 var fs = require("fs");
 require('dotenv').config();
 
@@ -16,7 +16,7 @@ var appRouter = function (app) {
 
     app.get("/rpihdmi/off", function (req, res) {
 
-        if (!isSecretValid(req)){
+        if (!isSecretValid(req)) {
             res.status(401).send("Unauthorized");
             return;
         }
@@ -36,7 +36,7 @@ var appRouter = function (app) {
 
     app.get("/rpihdmi/on", function (req, res) {
 
-        if (!isSecretValid(req)){
+        if (!isSecretValid(req)) {
             res.status(401).send("Unauthorized");
             return;
         }
@@ -62,13 +62,13 @@ var appRouter = function (app) {
     //
     app.get("/locations", async (req, res, next) => {
 
-        if (!isSecretValid(req)){
+        if (!isSecretValid(req)) {
             res.status(401).send("Unauthorized");
             return;
         }
 
         // Create output template that has repeating rows for locations
-        var output_template = "<table>{{#locations}}" + 
+        var output_template = "<table>{{#locations}}" +
             "<tr><td class='name'>{{{name}}}</td><td class='at'>@</td>" +
             "<td class='location'>{{{location}}}</td></tr>" +
             "{{/locations}}</table>";
@@ -81,10 +81,7 @@ var appRouter = function (app) {
 
 
         // If the domain matches, allow iframes from that domain
-        console.log(`Domain: ${req.query.domain}, whitelist: ${process.env.DOMAIN_WHITELIST}`);
-        if (process.env.DOMAIN_WHITELIST === req.query.domain) {
-            res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + req.query.domain);
-        }
+        res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
 
         res.status(200).send(output);
     });
@@ -93,17 +90,17 @@ var appRouter = function (app) {
     // Get a map with the locations of our devices pinned on
     //
     app.get("/locationsmap", async (req, res, next) => {
-    
-        if (!isSecretValid(req)){
+
+        if (!isSecretValid(req)) {
             res.status(401).send("Unauthorized");
             return;
         }
         var output_template = fs.readFileSync("./routes/locationmap.html", 'utf8');
-        
+
         // Get locations without street addresses
         const outputView = await getLocations(false);
 
-        if (outputView.allAtHome === true ) {
+        if (outputView.allAtHome === true) {
             res.status(200).send("");
         } else {
 
@@ -116,9 +113,7 @@ var appRouter = function (app) {
             var iframe = "<iframe width='320' height='320' frameBorder='0'  allowtransparency='true' srcdoc=\"" + output + "\"></iframe>";
 
             // If the domain matches, allow iframes from that domain
-            if (process.env.DOMAIN_WHITELIST === req.query.domain) {
-                res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + req.query.domain);
-            }
+            res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
 
             res.status(200).send(iframe);
         }
@@ -127,7 +122,7 @@ var appRouter = function (app) {
 
     app.get("/packages", function (req, res) {
 
-        if (!isSecretValid(req)){
+        if (!isSecretValid(req)) {
             res.status(401).send("Unauthorized");
             return;
         }
@@ -161,7 +156,7 @@ var appRouter = function (app) {
 
     app.post("/newpackage", function (req, res) {
 
-        if (!isSecretValid(req)){
+        if (!isSecretValid(req)) {
             res.status(401).send("Unauthorized");
             return;
         }
