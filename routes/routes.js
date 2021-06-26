@@ -8,7 +8,6 @@ var getLocations = require ('../shared/functions.js').getLocations;
 var fs = require("fs");
 require('dotenv').config();
 
-
 global.currentDay = Date.now();
 global.mostRecentPackage;
 global.numberPackages = 0;
@@ -80,6 +79,12 @@ var appRouter = function (app) {
         // Join the locations to the return template
         var output = mustache.render(output_template, outputView);
 
+
+        // If the domain matches, allow iframes from that domain
+        if (process.env.DOMAIN_WHITELIST === req.query.domain) {
+            res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + req.query.domain);
+        }
+
         res.status(200).send(output);
     });
 
@@ -108,6 +113,11 @@ var appRouter = function (app) {
 
             // Create an iframe as the MMM-REST table won't show it otherwise
             var iframe = "<iframe width='320' height='320' frameBorder='0'  allowtransparency='true' srcdoc=\"" + output + "\"></iframe>";
+
+            // If the domain matches, allow iframes from that domain
+            if (process.env.DOMAIN_WHITELIST === req.query.domain) {
+                res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + req.query.domain);
+            }
 
             res.status(200).send(iframe);
         }

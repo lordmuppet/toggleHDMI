@@ -9,3 +9,4 @@ devices.json
 *.pem
 /public
 .DS_Store
+/certs
