@@ -250,10 +250,10 @@ module.exports = {
                 const fetchResponse = await fetch(`${baseUrl}${hassioUser.id}`, settings);
 
                 if (fetchResponse.status === 200) {
-                    
+
                     const matchingState = await fetchResponse.json();
 
-                    if (matchingState) {
+                    if (matchingState && matchingState.attributes.latitude) {
 
                         locations.push({
                             index: index,
@@ -271,6 +271,7 @@ module.exports = {
                             radiusKm: hassioUser.radiusKm,
                         })
                     }
+
 
                 }
 
