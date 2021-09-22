@@ -10,3 +10,5 @@ devices.json
 /public
 .DS_Store
 /certs
+.DS_Store
+devices.temp.json

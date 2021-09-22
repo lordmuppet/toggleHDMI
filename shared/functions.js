@@ -27,16 +27,9 @@ module.exports = {
     // to do geoCoding for Xplora
     getLocations: async function (needStreetAddress) {
 
-        var apple_id = process.env.APPLE_ID;
-        var password = process.env.APPLE_PASSWORD;
-
-        var findMyFriends = new FindMyFriends();
-
         const userDevicesBin = fs.readFileSync("./devices.json");
         // Define to JSON type
         const userDevices = JSON.parse(userDevicesBin);
-
-        const appleLocations = await findMyFriends.getLocations(apple_id, password);
 
         // This will be the output template for mustache
         // We will fill in the locations array with data from apple and Xplora
@@ -45,29 +38,37 @@ module.exports = {
             allAtHome: false,
         }
 
-        // Get apple locations
-        const locations = appleLocations.map(async (location, index) => {
-            const user = userDevices.filter(device => device.id === location.id);
-            if (user.length > 0) {
-                return {
-                    index: index,
-                    name: user[0].name,
-                    id: location.id,
-                    lat: location.location.latitude,
-                    long: location.location.longitude,
-                    location: needStreetAddress ? 
-                        await module.exports.getAddress(location.location.latitude, 
-                            location.location.longitude, 
-                            location.location.address.streetAddress + ", " + location.location.address.locality,
-                            user[0]) 
-                        : null,
-                    icon: user[0].icon,
-                    radiusKm: user[0].radiusKm,
-                }
-            }
-        });
+        // // Get apple locations
 
-        outputView.locations = await Promise.all(locations);
+        // var apple_id = process.env.APPLE_ID;
+        // var password = process.env.APPLE_PASSWORD;
+        // var findMyFriends = new FindMyFriends();
+        // const appleLocations = await findMyFriends.getLocations(apple_id, password);
+        // const locations = appleLocations.map(async (location, index) => {
+        //     const user = userDevices.filter(device => device.id === location.id);
+        //     if (user.length > 0) {
+        //         return {
+        //             index: index,
+        //             name: user[0].name,
+        //             id: location.id,
+        //             lat: location.location.latitude,
+        //             long: location.location.longitude,
+        //             location: needStreetAddress ? 
+        //                 await module.exports.getAddress(location.location.latitude, 
+        //                     location.location.longitude, 
+        //                     location.location.address.streetAddress + ", " + location.location.address.locality,
+        //                     user[0]) 
+        //                 : null,
+        //             icon: user[0].icon,
+        //             radiusKm: user[0].radiusKm,
+        //         }
+        //     }
+        // });
+
+        // Get Home Assistant locations
+        outputView.locations = await module.exports.getHassioLocations(userDevices, needStreetAddress);
+
+        // outputView.locations = await Promise.all(locations);
 
         // // Get xplora watch locations
         // const xploraLocations = await module.exports.getXploraLocation(userDevices);
@@ -87,34 +88,34 @@ module.exports = {
         //     }
         // })
 
-        const ojoyLocations = await module.exports.getOjoyLocation(userDevices);
-        const moreLocations = ojoyLocations.map(async (location, index) => {
-            const user = userDevices.filter(device => device.id === location.d.Data.ChildId.toString());
-            const lat = parseFloat(new Buffer(location.d.Data.Lat, 'base64').toString('ascii'));
-            const long = parseFloat(new Buffer(location.d.Data.Lng, 'base64').toString('ascii'))
-            
-            if (user.length > 0) {
-                return {
-                    index: index + outputView.locations.length,
-                    name: user[0].name,
-                    id: user[0].id,
-                    lat: lat,
-                    long: long,
-                    location: needStreetAddress ? 
-                        await module.exports.getAddress(
-                            lat, 
-                            long, 
-                            null,
-                            user[0]) 
-                        : null,
-                    icon: user[0].icon,
-                    radiusKm: user[0].radiusKm,
-                }
-            }
-        })
+        // const ojoyLocations = await module.exports.getOjoyLocation(userDevices);
+        // const moreLocations = ojoyLocations.map(async (location, index) => {
+        //     const user = userDevices.filter(device => device.id === location.d.Data.ChildId.toString());
+        //     const lat = parseFloat(new Buffer(location.d.Data.Lat, 'base64').toString('ascii'));
+        //     const long = parseFloat(new Buffer(location.d.Data.Lng, 'base64').toString('ascii'))
 
-        // Concat the apple and xplora locations together...
-        outputView.locations = outputView.locations.concat(await Promise.all(moreLocations));
+        //     if (user.length > 0) {
+        //         return {
+        //             index: index + outputView.locations.length,
+        //             name: user[0].name,
+        //             id: user[0].id,
+        //             lat: lat,
+        //             long: long,
+        //             location: needStreetAddress ?
+        //                 await module.exports.getAddress(
+        //                     lat,
+        //                     long,
+        //                     null,
+        //                     user[0])
+        //                 : null,
+        //             icon: user[0].icon,
+        //             radiusKm: user[0].radiusKm,
+        //         }
+        //     }
+        // })
+
+        // // Concat the apple and xplora locations together...
+        // outputView.locations = outputView.locations.concat(await Promise.all(moreLocations));
 
         // check if all the locations are at home
         outputView.allAtHome = outputView.locations.every(module.exports.isAtHome)
@@ -141,8 +142,8 @@ module.exports = {
 
             const body = {
                 "childId": users.id,
-                "userId":process.env.OJOY_USER_ID,
-                "SessionKey":process.env.OJOY_SESSION_TOKEN
+                "userId": process.env.OJOY_USER_ID,
+                "SessionKey": process.env.OJOY_SESSION_TOKEN
             }
 
             // Fetch the location data
@@ -219,6 +220,70 @@ module.exports = {
         return Promise.all(locationPromises);
 
     },
+    // Get the Home Assistant location
+    getHassioLocations: async function (devices, needStreetAddress) {
+
+        const hassioUsers = devices.filter(device => device.type === 'hassio');
+
+        // If there are no hassioUsers return nothing
+        if (hassioUsers.length === 0) {
+            return [];
+        }
+
+        const headers = {
+            "Authorization": `Bearer ${process.env.HASSIO_TOKEN}`,
+        }
+
+        // Fetch the location data
+        const baseUrl = process.env.HASSIO_URL;
+        const settings = {
+            method: 'GET',
+            headers: headers,
+        };
+        try {
+
+            const locations = [];
+
+            for (const [index, hassioUser] of hassioUsers.entries()) {
+
+                // Get the response from Home Assistant
+                const fetchResponse = await fetch(`${baseUrl}${hassioUser.id}`, settings);
+
+                if (fetchResponse.status === 200) {
+                    
+                    const matchingState = await fetchResponse.json();
+
+                    if (matchingState) {
+
+                        locations.push({
+                            index: index,
+                            name: hassioUser.name,
+                            id: matchingState.entity_id,
+                            lat: matchingState.attributes.latitude,
+                            long: matchingState.attributes.longitude,
+                            location: needStreetAddress ?
+                                await module.exports.getAddress(matchingState.attributes.latitude,
+                                    matchingState.attributes.longitude,
+                                    null,
+                                    hassioUser)
+                                : null,
+                            icon: hassioUser.icon,
+                            radiusKm: hassioUser.radiusKm,
+                        })
+                    }
+
+                }
+
+            }
+
+            return locations;
+        } catch (e) {
+            console.log(e)
+            return e;
+        }
+
+
+    },
     // Get the address of the icon of the POI. Uses the 'user/device' settings
     // provided in devices.json
     getAddress: async function (lat, long, streetAddress, user) {
@@ -244,7 +309,7 @@ module.exports = {
 
         // If the streetAddress is provided then use otherwise
         // get coordinates from Google
-        if (streetAddress){
+        if (streetAddress) {
             return streetAddress;
         } else {
             const address = await module.exports.decodeCoordinatesToAddress(lat, long);
