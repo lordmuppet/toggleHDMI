@@ -187,11 +187,24 @@ var appRouter = function (app) {
         // Get AQI
         const aqi = await getAqi();
 
+        let aqiLevel = 'Good';
+        if (aqi > 50 && aqi < 100){
+            aqiLevel = 'Moderate';
+        } else if (aqi > 100 && aqi < 150){
+            aqiLevel = 'Unhealthy for Sensitive Groups';
+        } else if (aqi > 150 && aqi < 200){
+            aqiLevel = 'Unhealthy';
+        } else if (aqi > 200 && aqi < 300){
+            aqiLevel = 'Very Unhealthy';
+        } else if (aqi > 300){
+            aqiLevel = 'Hazardous';
+        } 
+
         console.log(aqi)
         // If the domain matches, allow iframes from that domain
         res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
 
-        res.status(200).send(`<span class="aqi"><i class='fa fa-leaf'></i> New York (${aqi.toString()})</span>`);
+        res.status(200).send(`<i class='fa fa-leaf'></i> ${aqi.toString()} | ${aqiLevel}`);
     });
 }
 
