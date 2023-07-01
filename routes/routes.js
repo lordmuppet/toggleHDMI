@@ -191,7 +191,7 @@ var appRouter = function (app) {
         // If the domain matches, allow iframes from that domain
         res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
 
-        res.status(200).send(`<span class="aqi:><i class='fa fa-leaf'></i>New York (${aqi.toString()})</span>`);
+        res.status(200).send(`<span class="aqi"><i class='fa fa-leaf'></i>New York (${aqi.toString()})</span>`);
     });
 }
 
