@@ -5,6 +5,7 @@ var FindMyFriends = require('../shared/findmyfriends.js');
 var mustache = require('mustache');
 var isSecretValid = require('../shared/functions.js').isSecretValid;
 var getLocations = require('../shared/functions.js').getLocations;
+var getAqi = require('../shared/functions.js').getAqi;
 var fs = require("fs");
 require('dotenv').config();
 
@@ -171,6 +172,26 @@ var appRouter = function (app) {
 
         res.status(200).send("Subject: " + subject + "; Message: " + message + "; Last update: " + dateFormat(mostRecentPackage, "yyyy-mm-dd h:MM:ss"));
 
+    });
+
+        //
+    // Get the locations of all our devices
+    //
+    app.get("/aqi", async (req, res, next) => {
+
+        if (!isSecretValid(req)) {
+            res.status(401).send("Unauthorized");
+            return;
+        }
+
+        // Get AQI
+        const aqi = await getAqi();
+
+        console.log(aqi)
+        // If the domain matches, allow iframes from that domain
+        res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
+
+        res.status(200).send(`<div><i class='fa fa-leaf'></i>New York (${aqi.toString()})</div>`);
     });
 }
 

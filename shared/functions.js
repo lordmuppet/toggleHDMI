@@ -363,5 +363,39 @@ module.exports = {
     },
     subtract: function (num1, num2) {
         return subtract(num1, num2);
+    },
+    // Get AQI from api.waqi.info
+    getAqi: async function () {
+
+
+        const params = {
+            token: process.env.WAQI_TOKEN
+        }
+        // Fetch the aqi data
+        const Url = `${process.env.WAQI_URL}?token=${process.env.WAQI_TOKEN}`;
+        const settings = {
+            method: 'GET',
+        };
+
+        console.log(settings, Url);
+        try {
+
+            const fetchResponse = await fetch(`${Url}`, settings);
+
+            if (fetchResponse.status === 200) {
+
+                const aqi_output = await fetchResponse.json();
+                console.log(aqi_output);
+                return aqi_output.data.aqi;
+
+            }
+
+            
+        } catch (e) {
+            console.log(e)
+            return e;
+        }
+
+
     }
 };
