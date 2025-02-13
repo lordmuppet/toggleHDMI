@@ -36,6 +36,7 @@ module.exports = {
         let outputView = {
             locations: [],
             allAtHome: false,
+            allAtPoi: false,
         }
 
         // // Get apple locations
@@ -117,8 +118,9 @@ module.exports = {
         // // Concat the apple and xplora locations together...
         // outputView.locations = outputView.locations.concat(await Promise.all(moreLocations));
 
-        // check if all the locations are at home
+        // check if all the locations are at a POI
         outputView.allAtHome = outputView.locations.every(module.exports.isAtHome)
+        outputView.allAtPoi = outputView.locations.every(module.exports.isAtPoi)
 
         return outputView;
 
@@ -354,6 +356,30 @@ module.exports = {
         // Check each poi against the provided user's location, and return true if at home
         for (let poi of pois) {
             if (poi.name === "Home" && arePointsNear(lat, long, poi.latitude, poi.longitude, location.radiusKm)) {
+                return true;
+            }
+        }
+
+        return false;
+
+    },
+    isAtPoi: function (location) {
+
+        if (!location) {
+            return false;
+        }
+
+        var lat = location.lat;
+        var long = location.long;
+
+        // Get Points of interest from file
+        var contents = fs.readFileSync("./shared/pois.json");
+        // Define to JSON type
+        var pois = JSON.parse(contents);
+
+        // Check each poi against the provided user's location, and return true if it is. 
+        for (let poi of pois) {
+            if (arePointsNear(lat, long, poi.latitude, poi.longitude, location.radiusKm)) {
                 return true;
             }
         }
