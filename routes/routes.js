@@ -101,7 +101,7 @@ var appRouter = function (app) {
         // Get locations without street addresses
         const outputView = await getLocations(false);
 
-        if (outputView.allAtPoi === true || process.env.SHOW_MAP === 'true') {
+        if (outputView.allAtPoi === true || process.env.SHOW_MAP === 'false') {
             // If the domain matches, allow iframes from that domain
             res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
             res.status(200).send("");
