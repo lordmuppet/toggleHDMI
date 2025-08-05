@@ -3,6 +3,9 @@ var FindMyFriends = require('./findmyfriends.js');
 var NodeGeocoder = require('node-geocoder');
 var fs = require("fs");
 
+console.log('Running under Node', process.version);
+console.log('global.fetch is', typeof fetch);
+
 function arePointsNear(checkLat, checkLong, centerLat, centerLong, km) {
     var ky = 40000 / 360;
     var kx = Math.cos(Math.PI * centerLat / 180.0) * ky;
