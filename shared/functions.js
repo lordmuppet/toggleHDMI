@@ -1,5 +1,5 @@
 require('dotenv').config();
-var fetch = require('node-fetch');
+const fetch = require('node-fetch').default;
 var FindMyFriends = require('./findmyfriends.js');
 var NodeGeocoder = require('node-geocoder');
 var fs = require("fs");
@@ -327,9 +327,9 @@ module.exports = {
     decodeCoordinatesToAddress: async function (lat, lon) {
 
         const options = {
-            provider: 'google',
+            provider: 'locationiq',
             httpAdapter: 'https', // Default
-            apiKey: process.env.GOOGLE_MAPS_API_KEY,
+            apiKey: process.env.LOCATION_IQ_TOKEN,
             formatter: null         // 'gpx', 'string', ...
         };
 
