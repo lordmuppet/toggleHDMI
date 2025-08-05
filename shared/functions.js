@@ -1,5 +1,4 @@
 require('dotenv').config();
-const fetch = require('node-fetch').default;
 var FindMyFriends = require('./findmyfriends.js');
 var NodeGeocoder = require('node-geocoder');
 var fs = require("fs");
