@@ -1,5 +1,4 @@
 var path = require("path");
-var fetch = require('node-fetch');
 var dateFormat = require('dateformat');
 var FindMyFriends = require('../shared/findmyfriends.js');
 var mustache = require('mustache');
