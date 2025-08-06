@@ -34,6 +34,36 @@ var appRouter = function (app) {
         res.status(200).send("Display turned off!");
     });
 
+    //
+    // Static map from LocationIQ with markers
+    //
+    app.get("/locationsmap", async (req, res, next) => {
+        if (!isSecretValid(req)) {
+            res.status(401).send("Unauthorized");
+            return;
+        }
+        // Fetch location data without street addresses
+        const outputView = await getLocations(false);
+        // // Build marker parameters
+        const markerParams = outputView.locations
+            .map(loc => `&markers=${loc.lat},${loc.long}|icon:tiny-purple-cutout`)
+            .join("");
+
+        // Construct static map URL
+        const apiKey = process.env.LOCATION_IQ_TOKEN;
+        const size = "320x320";
+        const zoom = process.env.LOCATIONIQ_ZOOM || "5";
+        const mapUrl = `https://maps.locationiq.com/v3/staticmap?key=${apiKey}&maptype=light&size=${size}&zoom=${zoom}$&format=jpg${markerParams}`;
+        
+        // Allow framing from whitelisted domain
+        res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
+        // Allow maps.locationiq.com in Content Security Policy
+        res.header('Content-Security-Policy', "default-src 'self'; frame-src 'self' https://maps.locationiq.com; img-src 'self' https://maps.locationiq.com;");
+        // Return the iframe with the static map
+        const mapImage = `<img width="320" height="320" frameBorder="0" allowtransparency="true" src="${mapUrl}"></img>`;
+        res.status(200).send(mapImage);
+    });
+
     app.get("/rpihdmi/on", function (req, res) {
 
         if (!isSecretValid(req)) {
@@ -87,40 +117,40 @@ var appRouter = function (app) {
     });
 
     //
-    // Get a map with the locations of our devices pinned on
+    // Get a map with the locations of our devices pinned on (uses Google) - Archived
     //
-    app.get("/locationsmap", async (req, res, next) => {
+    // app.get("/locationsmap", async (req, res, next) => {
 
-        if (!isSecretValid(req)) {
-            res.status(401).send("Unauthorized");
-            return;
-        }
-        var output_template = fs.readFileSync("./routes/locationmap.html", 'utf8');
+    //     if (!isSecretValid(req)) {
+    //         res.status(401).send("Unauthorized");
+    //         return;
+    //     }
+    //     var output_template = fs.readFileSync("./routes/locationmap.html", 'utf8');
 
-        // Get locations without street addresses
-        const outputView = await getLocations(false);
+    //     // Get locations without street addresses
+    //     const outputView = await getLocations(false);
 
-        if (outputView.allAtPoi === true || process.env.SHOW_MAP === 'false') {
-            // If the domain matches, allow iframes from that domain
-            res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
-            res.status(200).send("");
-        } else {
+    //     if (outputView.allAtPoi === true || process.env.SHOW_MAP === 'false') {
+    //         // If the domain matches, allow iframes from that domain
+    //         res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
+    //         res.status(200).send("");
+    //     } else {
 
-            outputView.apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    //         outputView.apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
-            // Join the locations to the return template
-            var output = mustache.render(output_template, outputView);
+    //         // Join the locations to the return template
+    //         var output = mustache.render(output_template, outputView);
 
-            // Create an iframe as the MMM-REST table won't show it otherwise
-            var iframe = "<iframe width='320' height='320' frameBorder='0'  allowtransparency='true' srcdoc=\"" + output + "\"></iframe>";
+    //         // Create an iframe as the MMM-REST table won't show it otherwise
+    //         var iframe = "<iframe width='320' height='320' frameBorder='0'  allowtransparency='true' srcdoc=\"" + output + "\"></iframe>";
 
-            // If the domain matches, allow iframes from that domain
-            res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
+    //         // If the domain matches, allow iframes from that domain
+    //         res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
 
-            res.status(200).send(iframe);
-        }
+    //         res.status(200).send(iframe);
+    //     }
 
-    });
+    // });
 
     app.get("/packages", function (req, res) {
 
