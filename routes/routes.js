@@ -44,24 +44,32 @@ var appRouter = function (app) {
         }
         // Fetch location data without street addresses
         const outputView = await getLocations(false);
-        // // Build marker parameters
-        const markerParams = outputView.locations
-            .map(loc => `&markers=${loc.lat},${loc.long}|icon:tiny-purple-cutout`)
-            .join("");
 
-        // Construct static map URL
-        const apiKey = process.env.LOCATION_IQ_TOKEN;
-        const size = "320x320";
-        const zoom = process.env.LOCATIONIQ_ZOOM || "5";
-        const mapUrl = `https://maps.locationiq.com/v3/staticmap?key=${apiKey}&maptype=light&size=${size}&zoom=${zoom}$&format=jpg${markerParams}`;
-        
-        // Allow framing from whitelisted domain
-        res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
-        // Allow maps.locationiq.com in Content Security Policy
-        res.header('Content-Security-Policy', "default-src 'self'; frame-src 'self' https://maps.locationiq.com; img-src 'self' https://maps.locationiq.com;");
-        // Return the iframe with the static map
-        const mapImage = `<img width="320" height="320" frameBorder="0" allowtransparency="true" src="${mapUrl}"></img>`;
-        res.status(200).send(mapImage);
+        // don't show map if everyone at a poi
+        if (outputView.allAtPoi === true) {
+            // If the domain matches, allow iframes from that domain
+            res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
+            res.status(200).send("");
+        } else {
+            // // Build marker parameters
+            const markerParams = outputView.locations
+                .map(loc => `&markers=${loc.lat},${loc.long}|icon:tiny-purple-cutout`)
+                .join("");
+
+            // Construct static map URL
+            const apiKey = process.env.LOCATION_IQ_TOKEN;
+            const size = "320x320";
+            const zoom = process.env.LOCATIONIQ_ZOOM || "5";
+            const mapUrl = `https://maps.locationiq.com/v3/staticmap?key=${apiKey}&maptype=light&size=${size}&zoom=${zoom}$&format=jpg${markerParams}`;
+            
+            // Allow framing from whitelisted domain
+            res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
+            // Allow maps.locationiq.com in Content Security Policy
+            res.header('Content-Security-Policy', "default-src 'self'; frame-src 'self' https://maps.locationiq.com; img-src 'self' https://maps.locationiq.com;");
+            // Return the iframe with the static map
+            const mapImage = `<img width="320" height="320" frameBorder="0" allowtransparency="true" src="${mapUrl}"></img>`;
+            res.status(200).send(mapImage);
+        }
     });
 
     app.get("/rpihdmi/on", function (req, res) {
