@@ -337,6 +337,8 @@ module.exports = {
 
         // Transform coordinates to address
         var geocoder = NodeGeocoder(options);
+        // Delay to avoid rate limiting (max 2 requests per second)
+        await new Promise(resolve => setTimeout(resolve, 600));
         const res = await geocoder.reverse({ lat: lat, lon: lon })
 
         return res[0].streetNumber + ' ' + res[0].streetName + ', ' + res[0].city;
