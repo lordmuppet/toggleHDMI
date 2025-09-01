@@ -60,7 +60,7 @@ var appRouter = function (app) {
             const apiKey = process.env.LOCATION_IQ_TOKEN;
             const size = "320x320";
             const zoom = process.env.LOCATIONIQ_ZOOM || "5";
-            const mapUrl = `https://maps.locationiq.com/v3/staticmap?key=${apiKey}&maptype=light&size=${size}&zoom=${zoom}$&format=jpg${markerParams}`;
+            const mapUrl = `https://maps.locationiq.com/v3/staticmap?key=${apiKey}&maptype=streets&size=${size}&zoom=${zoom}$&format=jpg${markerParams}`;
             
             // Allow framing from whitelisted domain
             res.header('X-FRAME-OPTIONS', 'ALLOW-FROM ' + process.env.DOMAIN_WHITELIST);
