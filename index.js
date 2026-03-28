@@ -24,7 +24,7 @@ app.use('/.well-known/pki-validation/', express.static('public'))
 routes(app);
 
 var server = app.listen(18080, function () {
-    console.log("app running on port.", server.address().port);
+  console.log("app running on port.", server.address().port);
 });
 
-https.createServer(options, app).listen(18443);
+https.createServer(options, app).listen(8443);
